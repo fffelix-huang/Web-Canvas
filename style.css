@@ -6,8 +6,38 @@
 }
 
 #canvas {
-    margin-left: 5%;
-    margin-top: 5%;
+    position: absolute;
+    left: 50px;
+    top: 50px;
     border: 2px solid black;
     background-color: white;
+}
+
+#color-picker {
+    position: absolute;
+    background-color: aqua;
+    font-size: 0px;
+    left: 75%;
+    top: 50px;
+    border: 1px solid black;
+}
+
+#color-picker .row {
+    position: relative;
+}
+
+#color-picker .row .pixel {
+    position: relative;
+    background-color: white;
+    border: 0px;
+    display: inline-block;
+    margin-left: 0%;
+    margin-right: 0%;
+}
+
+#color-box {
+    position: absolute;
+    border: 1px solid black;
+    left: 50px;
+    top: 87.5%;
 }
