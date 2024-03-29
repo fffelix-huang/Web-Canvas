@@ -53,6 +53,16 @@ const init_tools = () => {
     circle.onclick    = () => { tool_state = "circle"; }
     triangle.onclick  = () => { tool_state = "triangle"; }
     rectangle.onclick = () => { tool_state = "rectangle"; }
+
+    download.onclick = () => {
+        let a = document.createElement("a");
+        a.href = canvas.toDataURL();
+        a.download = "canvas.png";
+
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    };
 };
 
 const init_canvas = () => {
