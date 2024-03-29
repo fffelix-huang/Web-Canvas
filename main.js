@@ -66,7 +66,7 @@ const init_canvas = () => {
         let mouseX = e.pageX - this.offsetLeft;
         let mouseY = e.pageY - this.offsetTop;
 
-        if(tool_state == "pencil") {
+        if(tool_state == "pencil" || tool_state == "eraser") {
             lastX = mouseX;
             lastY = mouseY;
         }
