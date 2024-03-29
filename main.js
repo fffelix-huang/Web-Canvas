@@ -182,9 +182,14 @@ const init_color_picker = () => {
             let color = make_color(i * (255 / HEIGHT), j * (255 / WIDTH), 255 / 2);
             pixel.style.background = color;
 
-            pixel.onclick      = () => { selected_color = color; };
-            pixel.onmouseenter = () => { hovered_color = color; };
-            pixel.onmouseleave = () => { hovered_color = selected_color; }
+            pixel.onclick = () => {
+                selected_color = color;
+                color_box.style.background = selected_color;
+                ctx.fillStyle = selected_color;
+            };
+
+            pixel.onmouseenter = () => { color_box.style.background = color; };
+            pixel.onmouseleave = () => { color_box.style.background = selected_color; }
 
             row.appendChild(pixel);
         }
@@ -196,6 +201,7 @@ const init_color_picker = () => {
 const init_color_box = () => {
     color_box.style.height = (SCREEN_HEIGHT / 10) + "px";
     color_box.style.width = color_box.style.height;
+    color_box.style.background = selected_color;
 };
 
 window.addEventListener("load", () => {
@@ -204,17 +210,3 @@ window.addEventListener("load", () => {
     init_color_picker();
     init_color_box();
 });
-
-// Update
-
-const update_color_box = () => {
-    color_box.style.background = hovered_color;
-    ctx.fillStyle = selected_color;
-};
-
-const update_screen = () => {
-    update_color_box();
-};
-
-const FPS = 60;
-setInterval(update_screen, 1000 / FPS);
