@@ -63,6 +63,8 @@ const init_tools = () => {
         a.click();
         document.body.removeChild(a);
     };
+
+    clear.onclick = () => { ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); };
 };
 
 const init_canvas = () => {
