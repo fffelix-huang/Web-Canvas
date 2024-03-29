@@ -2,8 +2,13 @@ const canvas = document.getElementById("canvas");
 const color_picker = document.getElementById("color-picker");
 const color_box = document.getElementById("color-box");
 
+const ctx = canvas.getContext("2d");
+
 const SCREEN_HEIGHT = window.innerHeight;
 const SCREEN_WIDTH = window.innerWidth;
+
+const CANVAS_HEIGHT = SCREEN_HEIGHT * 0.8;
+const CANVAS_WIDTH  = SCREEN_WIDTH  * 0.7;
 
 // Mouse
 
@@ -19,19 +24,103 @@ const make_color = (r, g, b) => { return "rgb(" + r + "," + g + "," + b + ")"; }
 let selected_color = make_color(0, 0, 0);
 let hovered_color = make_color(0, 0, 0);
 
+// Canvas Tools
+
+let tool_state = "pencil";
+let tool_thickness = 5;
+let operations = [];
+
 // Initialize
 
 const init_canvas = () => {
-    canvas.height = SCREEN_HEIGHT * 0.8;
-    canvas.width = SCREEN_WIDTH * 0.7;
+    canvas.height = CANVAS_HEIGHT;
+    canvas.width  = CANVAS_WIDTH;
+
+    let lastX = -1;
+    let lastY = -1;
+
+    canvas.onmousedown = function(e) {
+        let mouseX = e.pageX - this.offsetLeft;
+        let mouseY = e.pageY - this.offsetTop;
+
+        if(tool_state == "pencil") {
+            lastX = mouseX;
+            lastY = mouseY;
+        }
+    };
+
+    canvas.onmousemove = function(e) {
+        if(!mousePressed) {
+            return;
+        }
+
+        let mouseX = e.pageX - this.offsetLeft;
+        let mouseY = e.pageY - this.offsetTop;
+
+        if(tool_state == "pencil") {
+            // Reference: https://stackoverflow.com/questions/10122553/create-a-realistic-pencil-tool-for-a-painting-app-with-html5-canvas
+            let x1 = mouseX;
+            let x2 = lastX;
+            let y1 = mouseY;
+            let y2 = lastY;
+
+            let steep = (Math.abs(y2 - y1) > Math.abs(x2 - x1));
+            if(steep) {
+                let xtmp = x1;
+                x1 = y1;
+                y1 = xtmp;
+
+                let ytmp = y2;
+                y2 = x2;
+                x2 = ytmp;
+            }
+
+            if(x1 >  x2) {
+                let xtmp = x1;
+                x1 = x2;
+                x2 = xtmp;
+
+                let ytmp = y1;
+                y1 = y2;
+                y2 = ytmp;
+            }
+
+            let dx = x2 - x1;
+            let dy = Math.abs(y2 - y1);
+            let error = 0;
+            let delta = dy / dx;
+            let yStep = -1;
+            let y = y1;
+
+            if(y1 < y2) {
+                yStep = 1;
+            }
+
+            for(let x = x1; x < x2; x++) {
+                if(steep) {
+                    ctx.fillRect(y, x, tool_thickness, tool_thickness);
+                } else {
+                    ctx.fillRect(x, y, tool_thickness, tool_thickness);
+                }
+
+                error += delta;
+
+                if(error >= 0.5) {
+                    y += yStep;
+                    error -= 1;
+                }
+            }
+
+            lastX = mouseX;
+            lastY = mouseY;
+        }
+    };
 };
 
 const init_color_picker = () => {
     const WIDTH = 25;
     const HEIGHT = 12;
     const PIXEL_SIZE = SCREEN_WIDTH / 110;
-
-    console.log(PIXEL_SIZE);
 
     color_picker.innerHTML = "";
 
@@ -75,6 +164,7 @@ window.addEventListener("load", () => {
 
 const update_color_box = () => {
     color_box.style.background = hovered_color;
+    ctx.fillStyle = selected_color;
 };
 
 const update_screen = () => {
