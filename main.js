@@ -26,11 +26,34 @@ let hovered_color = make_color(0, 0, 0);
 
 // Canvas Tools
 
+const pencil = document.getElementById("pencil");
+const eraser = document.getElementById("eraser");
+const text = document.getElementById("text");
+const line = document.getElementById("line");
+const circle = document.getElementById("circle");
+const triangle = document.getElementById("triangle");
+const rectangle = document.getElementById("rectangle");
+const upload = document.getElementById("upload");
+const download = document.getElementById("download");
+const undo = document.getElementById("undo");
+const redo = document.getElementById("redo");
+const clear = document.getElementById("clear");
+
 let tool_state = "pencil";
 let tool_thickness = 5;
 let operations = [];
 
 // Initialize
+
+const init_tools = () => {
+    pencil.onclick    = () => { tool_state = "pencil"; };
+    eraser.onclick    = () => { tool_state = "eraser"; }
+    text.onclick      = () => { tool_state = "text"; }
+    line.onclick      = () => { tool_state = "line"; }
+    circle.onclick    = () => { tool_state = "circle"; }
+    triangle.onclick  = () => { tool_state = "triangle"; }
+    rectangle.onclick = () => { tool_state = "rectangle"; }
+};
 
 const init_canvas = () => {
     canvas.height = CANVAS_HEIGHT;
@@ -57,7 +80,7 @@ const init_canvas = () => {
         let mouseX = e.pageX - this.offsetLeft;
         let mouseY = e.pageY - this.offsetTop;
 
-        if(tool_state == "pencil") {
+        if(tool_state == "pencil" || tool_state == "eraser") {
             // Reference: https://stackoverflow.com/questions/10122553/create-a-realistic-pencil-tool-for-a-painting-app-with-html5-canvas
             let x1 = mouseX;
             let x2 = lastX;
@@ -97,10 +120,19 @@ const init_canvas = () => {
             }
 
             for(let x = x1; x < x2; x++) {
-                if(steep) {
-                    ctx.fillRect(y, x, tool_thickness, tool_thickness);
+                console.log(tool_state);
+                if(tool_state == "pencil") {
+                    if(steep) {
+                        ctx.fillRect(y, x, tool_thickness, tool_thickness);
+                    } else {
+                        ctx.fillRect(x, y, tool_thickness, tool_thickness);
+                    }
                 } else {
-                    ctx.fillRect(x, y, tool_thickness, tool_thickness);
+                    if(steep) {
+                        ctx.clearRect(y, x, tool_thickness, tool_thickness);
+                    } else {
+                        ctx.clearRect(x, y, tool_thickness, tool_thickness);
+                    }
                 }
 
                 error += delta;
@@ -155,6 +187,7 @@ const init_color_box = () => {
 };
 
 window.addEventListener("load", () => {
+    init_tools();
     init_canvas();
     init_color_picker();
     init_color_box();
