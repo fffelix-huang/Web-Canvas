@@ -39,9 +39,11 @@ const undo = document.getElementById("undo");
 const redo = document.getElementById("redo");
 const clear = document.getElementById("clear");
 
+const line_thickness = document.getElementById("line-thickness");
+
 let tool_state = "pencil";
-let tool_thickness = 5;
 let operations = [];
+let font = "sans-serif";
 
 // Initialize
 
@@ -73,6 +75,51 @@ const init_canvas = () => {
 
     let lastX = -1;
     let lastY = -1;
+
+    let currentTextBox = null;
+
+    const drawText = () => {
+        let textInfo = currentTextBox.value;
+        let x = parseInt(currentTextBox.style.left, 10);
+        let y = parseInt(currentTextBox.style.top, 10);
+
+        ctx.textBaseline = "top";
+        ctx.textAlign = "left";
+        ctx.font = line_thickness.value * 2 + "px " + font;
+        ctx.fillText(textInfo, x - SCREEN_WIDTH * 0.03, y - SCREEN_HEIGHT * 0.03);
+
+        document.body.removeChild(currentTextBox);
+        currentTextBox = null;
+    };
+
+    canvas.onclick = function(e) {
+        if(currentTextBox != null) {
+            drawText();
+        }
+
+        if(tool_state != "text") {
+            return;
+        }
+
+        currentTextBox = document.createElement("input");
+        currentTextBox.type = "text";
+        currentTextBox.style.position = "fixed";
+        currentTextBox.style.left = (e.clientX - 4) + "px";
+        currentTextBox.style.top = (e.clientY - 4) + "px";
+
+        currentTextBox.onkeydown = function(key) {
+            if(key.keyCode == 13) {
+                drawText();
+            }
+        };
+
+        currentTextBox.onmousedown = function() {
+            drawText();
+        }
+
+        document.body.appendChild(currentTextBox);
+        currentTextBox.focus();
+    }
 
     canvas.onmousedown = function(e) {
         let mouseX = e.pageX - this.offsetLeft;
@@ -132,18 +179,19 @@ const init_canvas = () => {
             }
 
             for(let x = x1; x < x2; x++) {
-                console.log(tool_state);
+                let thickness = line_thickness.value;
+
                 if(tool_state == "pencil") {
                     if(steep) {
-                        ctx.fillRect(y, x, tool_thickness, tool_thickness);
+                        ctx.fillRect(y, x, thickness, thickness);
                     } else {
-                        ctx.fillRect(x, y, tool_thickness, tool_thickness);
+                        ctx.fillRect(x, y, thickness, thickness);
                     }
                 } else {
                     if(steep) {
-                        ctx.clearRect(y, x, tool_thickness, tool_thickness);
+                        ctx.clearRect(y, x, thickness, thickness);
                     } else {
-                        ctx.clearRect(x, y, tool_thickness, tool_thickness);
+                        ctx.clearRect(x, y, thickness, thickness);
                     }
                 }
 

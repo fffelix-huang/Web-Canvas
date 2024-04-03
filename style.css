@@ -41,6 +41,12 @@
     top: 87.5%;
 }
 
+#line-thickness {
+    position: absolute;
+    top: 30%;
+    left: 82.5%;
+}
+
 .tool-box {
     position: absolute;
     font-size: 0px;
@@ -70,4 +76,66 @@
 .tool-box .tool:hover {
     background-color: rgb(126, 233, 197);
     cursor: pointer;
+}
+
+/* Line Thickness Controller */
+
+#line-thickness {
+    position: absolute;
+    top: 30%;
+    left: 80%;
+}
+
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    cursor: pointer;
+    width: 15rem;
+}
+
+input[type="range"]:focus {
+    outline: none;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+    background-color: #153b3f;
+    border-radius: 0.5rem;
+    height: 0.5rem;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    margin-top: -12px;
+
+    background-color: #6db4fa;
+    height: 2rem;
+    width: 1rem;
+}
+
+input[type="range"]:focus::-webkit-slider-thumb {
+    border: 1px solid #153b3f;
+    outline: 3px solid #153b3f;
+    outline-offset: 0.125rem;
+}
+
+input[type="range"]::-moz-range-track {
+    background-color: #153b3f;
+    border-radius: 0.5rem;
+    height: 0.5rem;
+}
+
+input[type="range"]::-moz-range-thumb {
+    border: none;
+    border-radius: 0;
+    background-color: #6db4fa;
+    height: 2rem;
+    width: 1rem;
+}
+
+input[type="range"]:focus::-moz-range-thumb {
+    border: 1px solid #153b3f;
+    outline: 3px solid #153b3f;
+    outline-offset: 0.125rem;
 }
