@@ -43,7 +43,145 @@ const line_thickness = document.getElementById("line-thickness");
 
 let tool_state = "pencil";
 let operations = [];
-let font = "sans-serif";
+let font_style = "sans-serif";
+
+// Histories
+
+let history = [];
+let history_pointer = 0;
+
+const cleanHistory = () => {
+    while(history.length > history_pointer) {
+        history.pop();
+    }
+};
+
+const drawFillRect = (x, y, width, height, color) => {
+    cleanHistory();
+
+    const args = {
+        func: "fillRect",
+        x: x,
+        y: y,
+        width: width,
+        height: height,
+        color: color
+    };
+
+    history.push(args);
+    history_pointer++;
+
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, width, height);
+};
+
+const drawClearRect = (x, y, width, height) => {
+    cleanHistory();
+
+    const args = {
+        func: "clearRect",
+        x: x,
+        y: y,
+        width: width,
+        height: height
+    };
+
+    history.push(args);
+    history_pointer++;
+
+    ctx.clearRect(x, y, width, height);
+};
+
+const drawFillText = (text_info, x, y, font_size, font_style) => {
+    cleanHistory();
+
+    const args = {
+        func: "fillText",
+        text_info: text_info,
+        x: x,
+        y: y,
+        font_size: font_size,
+        font_style: font_style
+    }
+
+    history.push(args);
+    history_pointer++;
+
+    ctx.textBaseline = "top";
+    ctx.textAlign = "left";
+    ctx.font = font_size + "px " + font_style;
+
+    ctx.fillText(text_info, x, y);
+};
+
+const stampHistory = () => {
+    cleanHistory();
+
+    const args = {
+        func: "stamp"
+    };
+
+    history.push(args);
+    history_pointer++;
+};
+
+const redoCanvas = () => {
+    if(history_pointer >= history.length) {
+        return;
+    }
+
+    history_pointer++;
+
+    while(history_pointer < history.length) {
+        let args = history[history_pointer];
+
+        if(args.func == "stamp") {
+            return;
+        }
+
+        if(args.func == "fillRect") {
+            ctx.fillStyle = args.color;
+            ctx.fillRect(args.x, args.y, args.width, args.height);
+        } else if(args.func == "clearRect") {
+            ctx.clearRect(args.x, args.y, args.width, args.height);
+        } else if(args.func == "fillText") {
+            ctx.textBaseline = "top";
+            ctx.textAlign = "left";
+            ctx.font = args.font_size + "px " + args.font_style;
+
+            ctx.fillText(args.text_info, args.x, args.y);
+        }
+
+        history_pointer++;
+    }
+};
+
+const undoCanvas = () => {
+    if(history_pointer <= 0) {
+        return;
+    }
+
+    history_pointer--;
+    ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+    let prevStamp = history_pointer;
+
+    while(prevStamp > 0) {
+        let args = history[prevStamp];
+
+        if(args.func == "stamp") {
+            break;
+        }
+
+        prevStamp--;
+    }
+
+    history_pointer = 0;
+
+    while(history_pointer < prevStamp) {
+        redoCanvas();
+    }
+};
 
 // Initialize
 
@@ -66,7 +204,13 @@ const init_tools = () => {
         document.body.removeChild(a);
     };
 
-    clear.onclick = () => { ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); };
+    undo.onclick = () => { undoCanvas(); }
+    redo.onclick = () => { redoCanvas(); }
+
+    clear.onclick = () => {
+        stampHistory();
+        drawClearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    };
 };
 
 const init_canvas = () => {
@@ -78,15 +222,13 @@ const init_canvas = () => {
 
     let currentTextBox = null;
 
-    const drawText = () => {
+    const writeText = () => {
         let textInfo = currentTextBox.value;
         let x = parseInt(currentTextBox.style.left, 10);
         let y = parseInt(currentTextBox.style.top, 10);
 
-        ctx.textBaseline = "top";
-        ctx.textAlign = "left";
-        ctx.font = line_thickness.value * 2 + "px " + font;
-        ctx.fillText(textInfo, x - SCREEN_WIDTH * 0.03, y - SCREEN_HEIGHT * 0.03);
+        stampHistory();
+        drawFillText(textInfo, x - SCREEN_WIDTH * 0.03, y - SCREEN_HEIGHT * 0.03, line_thickness.value * 2, font_style);
 
         document.body.removeChild(currentTextBox);
         currentTextBox = null;
@@ -94,7 +236,7 @@ const init_canvas = () => {
 
     canvas.onclick = function(e) {
         if(currentTextBox != null) {
-            drawText();
+            writeText();
         }
 
         if(tool_state != "text") {
@@ -109,12 +251,12 @@ const init_canvas = () => {
 
         currentTextBox.onkeydown = function(key) {
             if(key.keyCode == 13) {
-                drawText();
+                writeText();
             }
         };
 
         currentTextBox.onmousedown = function() {
-            drawText();
+            writeText();
         }
 
         document.body.appendChild(currentTextBox);
@@ -128,6 +270,8 @@ const init_canvas = () => {
         if(tool_state == "pencil" || tool_state == "eraser") {
             lastX = mouseX;
             lastY = mouseY;
+
+            stampHistory();
         }
     };
 
@@ -183,15 +327,15 @@ const init_canvas = () => {
 
                 if(tool_state == "pencil") {
                     if(steep) {
-                        ctx.fillRect(y, x, thickness, thickness);
+                        drawFillRect(y, x, thickness, thickness);
                     } else {
-                        ctx.fillRect(x, y, thickness, thickness);
+                        drawFillRect(x, y, thickness, thickness);
                     }
                 } else {
                     if(steep) {
-                        ctx.clearRect(y, x, thickness, thickness);
+                        drawClearRect(y, x, thickness, thickness);
                     } else {
-                        ctx.clearRect(x, y, thickness, thickness);
+                        drawClearRect(x, y, thickness, thickness);
                     }
                 }
 
