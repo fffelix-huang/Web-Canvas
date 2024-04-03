@@ -72,6 +72,7 @@ const drawFillRect = (x, y, width, height, color) => {
     history_pointer++;
 
     ctx.fillStyle = color;
+    ctx.strokeStyle = color;
     ctx.fillRect(x, y, width, height);
 };
 
@@ -92,7 +93,7 @@ const drawClearRect = (x, y, width, height) => {
     ctx.clearRect(x, y, width, height);
 };
 
-const drawFillText = (text_info, x, y, font_size, font_style) => {
+const drawFillText = (text_info, x, y, color, font_size, font_style) => {
     cleanHistory();
 
     const args = {
@@ -100,6 +101,7 @@ const drawFillText = (text_info, x, y, font_size, font_style) => {
         text_info: text_info,
         x: x,
         y: y,
+        color: color,
         font_size: font_size,
         font_style: font_style
     }
@@ -109,6 +111,8 @@ const drawFillText = (text_info, x, y, font_size, font_style) => {
 
     ctx.textBaseline = "top";
     ctx.textAlign = "left";
+    ctx.fillStyle = color;
+    ctx.strokeStyle = color;
     ctx.font = font_size + "px " + font_style;
 
     ctx.fillText(text_info, x, y);
@@ -131,6 +135,7 @@ const drawLine = (x, y, x2, y2, color, line_width) => {
     history_pointer++;
 
     ctx.beginPath();
+    ctx.fillStyle = color;
     ctx.strokeStyle = color;
     ctx.lineWidth = line_width;
 
@@ -156,6 +161,7 @@ const drawCircle = (x, y, r, color, line_width, fill) => {
     history_pointer++;
 
     ctx.beginPath();
+    ctx.fillStyle = color;
     ctx.strokeStyle = color;
     ctx.lineWidth = line_width;
 
@@ -186,6 +192,7 @@ const drawTriangle = (x, y, x2, y2, color, line_width, fill) => {
     history_pointer++;
 
     ctx.beginPath();
+    ctx.fillStyle = color;
     ctx.strokeStyle = color;
     ctx.lineWidth = line_width;
 
@@ -225,6 +232,7 @@ const drawRectangle = (x, y, width, height, color, line_width, fill) => {
     history.push(args);
     history_pointer++;
 
+    ctx.fillStyle = color;
     ctx.strokeStyle = color;
     ctx.strokeRect(x, y, width, height);
 };
@@ -256,17 +264,21 @@ const redoCanvas = () => {
 
         if(args.func == "fillRect") {
             ctx.fillStyle = args.color;
+            ctx.strokeStyle = args.color;
             ctx.fillRect(args.x, args.y, args.width, args.height);
         } else if(args.func == "clearRect") {
             ctx.clearRect(args.x, args.y, args.width, args.height);
         } else if(args.func == "fillText") {
             ctx.textBaseline = "top";
             ctx.textAlign = "left";
+            ctx.fillStyle = args.color;
+            ctx.strokeStyle = args.color;
             ctx.font = args.font_size + "px " + args.font_style;
 
             ctx.fillText(args.text_info, args.x, args.y);
         } else if(args.func == "drawLine") {
             ctx.beginPath();
+            ctx.fillStyle = args.color;
             ctx.strokeStyle = args.color;
             ctx.lineWidth = args.line_width;
 
@@ -275,6 +287,7 @@ const redoCanvas = () => {
             ctx.stroke();
         } else if(args.func == "drawCircle") {
             ctx.beginPath();
+            ctx.fillStyle = args.color;
             ctx.strokeStyle = args.color;
             ctx.lineWidth = args.line_width;
 
@@ -287,6 +300,7 @@ const redoCanvas = () => {
             }
         } else if(args.func == "drawTriangle") {
             ctx.beginPath();
+            ctx.fillStyle = args.color;
             ctx.strokeStyle = args.color;
             ctx.lineWidth = args.line_width;
 
@@ -306,6 +320,7 @@ const redoCanvas = () => {
                 ctx.stroke();
             }
         } else if(args.func == "strokeRect") {
+            ctx.fillStyle = args.color;
             ctx.strokeStyle = args.color;
             ctx.strokeRect(args.x, args.y, args.width, args.height);
         }
@@ -386,7 +401,7 @@ const init_canvas = () => {
         let y = parseInt(currentTextBox.style.top, 10);
 
         stampHistory();
-        drawFillText(textInfo, x - SCREEN_WIDTH * 0.03, y - SCREEN_HEIGHT * 0.03, line_thickness.value * 2, font_style);
+        drawFillText(textInfo, x - SCREEN_WIDTH * 0.03, y - SCREEN_HEIGHT * 0.03, selected_color, line_thickness.value * 2, font_style);
 
         document.body.removeChild(currentTextBox);
         currentTextBox = null;
@@ -531,9 +546,9 @@ const init_canvas = () => {
 
                 if(tool_state == "pencil") {
                     if(steep) {
-                        drawFillRect(y, x, thickness, thickness);
+                        drawFillRect(y, x, thickness, thickness, selected_color);
                     } else {
-                        drawFillRect(x, y, thickness, thickness);
+                        drawFillRect(x, y, thickness, thickness, selected_color);
                     }
                 } else {
                     if(steep) {
