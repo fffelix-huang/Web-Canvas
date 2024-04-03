@@ -114,6 +114,121 @@ const drawFillText = (text_info, x, y, font_size, font_style) => {
     ctx.fillText(text_info, x, y);
 };
 
+const drawLine = (x, y, x2, y2, color, line_width) => {
+    cleanHistory();
+
+    const args = {
+        func: "drawLine",
+        x: x,
+        y: y,
+        x2: x2,
+        y2: y2,
+        color: color,
+        line_width: line_width
+    };
+
+    history.push(args);
+    history_pointer++;
+
+    ctx.beginPath();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = line_width;
+
+    ctx.moveTo(x, y);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+};
+
+const drawCircle = (x, y, r, color, line_width, fill) => {
+    cleanHistory();
+
+    const args = {
+        func: "drawCircle",
+        x: x,
+        y: y,
+        r: r,
+        color: color,
+        line_width: line_width,
+        fill: fill
+    };
+
+    history.push(args);
+    history_pointer++;
+
+    ctx.beginPath();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = line_width;
+
+    ctx.arc(x, y, r, 0, 2 * Math.PI);
+
+    if(fill != null) {
+        ctx.fill();
+    } else {
+        ctx.stroke();
+    }
+};
+
+const drawTriangle = (x, y, x2, y2, color, line_width, fill) => {
+    cleanHistory();
+
+    const args = {
+        func: "drawTriangle",
+        x: x,
+        y: y,
+        x2: x2,
+        y2: y2,
+        color: color,
+        line_width: line_width,
+        fill: fill
+    };
+
+    history.push(args);
+    history_pointer++;
+
+    ctx.beginPath();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = line_width;
+
+    let L = Math.min(x, x2);
+    let R = Math.max(x, x2);
+    let U = Math.min(y, y2);
+    let D = Math.max(y, y2);
+
+    ctx.moveTo((L + R) / 2, U);
+    ctx.lineTo(L, D);
+    ctx.lineTo(R, D);
+    ctx.lineTo((L + R) / 2, U);
+
+    if(fill != null) {
+        ctx.fill();
+    } else {
+        ctx.stroke();
+    }
+};
+
+const drawRectangle = (x, y, width, height, color, line_width, fill) => {
+    if(fill != null) {
+        drawFillRect(x, y, width, height, color);
+        return;
+    }
+
+    const args = {
+        func: "strokeRect",
+        x: x,
+        y: y,
+        width: width,
+        height: height,
+        color: color,
+        line_width: line_width
+    };
+
+    history.push(args);
+    history_pointer++;
+
+    ctx.strokeStyle = color;
+    ctx.strokeRect(x, y, width, height);
+};
+
 const stampHistory = () => {
     cleanHistory();
 
@@ -150,6 +265,49 @@ const redoCanvas = () => {
             ctx.font = args.font_size + "px " + args.font_style;
 
             ctx.fillText(args.text_info, args.x, args.y);
+        } else if(args.func == "drawLine") {
+            ctx.beginPath();
+            ctx.strokeStyle = args.color;
+            ctx.lineWidth = args.line_width;
+
+            ctx.moveTo(args.x, args.y);
+            ctx.lineTo(args.x2, args.y2);
+            ctx.stroke();
+        } else if(args.func == "drawCircle") {
+            ctx.beginPath();
+            ctx.strokeStyle = args.color;
+            ctx.lineWidth = args.line_width;
+
+            ctx.arc(args.x, args.y, args.r, 0, 2 * Math.PI);
+
+            if(args.fill != null) {
+                ctx.fill();
+            } else {
+                ctx.stroke();
+            }
+        } else if(args.func == "drawTriangle") {
+            ctx.beginPath();
+            ctx.strokeStyle = args.color;
+            ctx.lineWidth = args.line_width;
+
+            let L = Math.min(args.x, args.x2);
+            let R = Math.max(args.x, args.x2);
+            let U = Math.min(args.y, args.y2);
+            let D = Math.max(args.y, args.y2);
+
+            ctx.moveTo((L + R) / 2, U);
+            ctx.lineTo(L, D);
+            ctx.lineTo(R, D);
+            ctx.lineTo((L + R) / 2, U);
+
+            if(args.fill != null) {
+                ctx.fill();
+            } else {
+                ctx.stroke();
+            }
+        } else if(args.func == "strokeRect") {
+            ctx.strokeStyle = args.color;
+            ctx.strokeRect(args.x, args.y, args.width, args.height);
         }
 
         history_pointer++;
@@ -263,6 +421,12 @@ const init_canvas = () => {
         currentTextBox.focus();
     }
 
+    let snapshot = null;
+    let snapshot_ctx = null;
+    let dragging = false;
+    let cornerX = -1;
+    let cornerY = -1;
+
     canvas.onmousedown = function(e) {
         let mouseX = e.pageX - this.offsetLeft;
         let mouseY = e.pageY - this.offsetTop;
@@ -272,6 +436,46 @@ const init_canvas = () => {
             lastY = mouseY;
 
             stampHistory();
+        } else if(tool_state == "line" || tool_state == "circle" || tool_state == "triangle" || tool_state == "rectangle") {
+            snapshot = document.createElement("canvas");
+            snapshot.height = CANVAS_HEIGHT;
+            snapshot.width = CANVAS_WIDTH;
+
+            snapshot_ctx = snapshot.getContext("2d");
+            snapshot_ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            snapshot_ctx.drawImage(canvas, 0, 0);
+
+            cornerX = mouseX;
+            cornerY = mouseY;
+            dragging = true;
+        }
+    };
+
+    canvas.onmouseup = function(e) {
+        let mouseX = e.pageX - this.offsetLeft;
+        let mouseY = e.pageY - this.offsetTop;
+
+        if(dragging) {
+            stampHistory();
+
+            if(tool_state == "line") {
+                drawLine(cornerX, cornerY, mouseX, mouseY, selected_color, line_thickness.value);
+            } else if(tool_state == "circle") {
+                let dx = cornerX - mouseX;
+                let dy = cornerY - mouseY;
+                let radius = Math.sqrt(dx * dx + dy * dy);
+
+                drawCircle(cornerX, cornerY, radius, selected_color, line_thickness.value, null);
+            } else if(tool_state == "triangle") {
+                drawTriangle(cornerX, cornerY, mouseX, mouseY, selected_color, line_thickness.value, null);
+            } else if(tool_state == "rectangle") {
+                let width  = mouseX - cornerX;
+                let height = mouseY - cornerY;
+
+                drawRectangle(cornerX, cornerY, width, height, selected_color, line_thickness.value, null);
+            }
+
+            dragging = false;
         }
     };
 
@@ -349,6 +553,41 @@ const init_canvas = () => {
 
             lastX = mouseX;
             lastY = mouseY;
+        } else if(tool_state == "line" || tool_state == "circle" || tool_state == "triangle" || tool_state == "rectangle") {
+            if(dragging) {
+                let L = Math.min(mouseX, cornerX);
+                let R = Math.max(mouseX, cornerX);
+                let U = Math.min(mouseY, cornerY);
+                let D = Math.max(mouseY, cornerY);
+
+                ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+                ctx.drawImage(snapshot, 0, 0);
+
+                ctx.beginPath();
+                ctx.strokeStyle = selected_color;
+                ctx.lineWidth = line_thickness.value;
+
+                if(tool_state == "line") {
+                    ctx.moveTo(cornerX, cornerY);
+                    ctx.lineTo(mouseX, mouseY);
+                    ctx.stroke();
+                } else if(tool_state == "circle") {
+                    let dx = cornerX - mouseX;
+                    let dy = cornerY - mouseY;
+                    let radius = Math.sqrt(dx * dx + dy * dy);
+
+                    ctx.arc(cornerX, cornerY, radius, 0, 2 * Math.PI);
+                    ctx.stroke();
+                } else if(tool_state == "triangle") {
+                    ctx.moveTo((L + R) / 2, U);
+                    ctx.lineTo(L, D);
+                    ctx.lineTo(R, D);
+                    ctx.lineTo((L + R) / 2, U);
+                    ctx.stroke();
+                } else if(tool_state == "rectangle") {
+                    ctx.strokeRect(L, U, R - L, D - U);
+                }
+            }
         }
     };
 };
