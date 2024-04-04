@@ -30,6 +30,7 @@ const line = document.getElementById("line");
 const circle = document.getElementById("circle");
 const triangle = document.getElementById("triangle");
 const rectangle = document.getElementById("rectangle");
+const yin_yang = document.getElementById("yin-yang");
 const upload = document.getElementById("upload");
 const download = document.getElementById("download");
 const undo = document.getElementById("undo");
@@ -39,6 +40,7 @@ const clear = document.getElementById("clear");
 const line_thickness = document.getElementById("line-thickness");
 
 let tool_state = "pencil";
+let fill = false;
 let operations = [];
 let font_style = "sans-serif";
 
@@ -164,7 +166,7 @@ const drawCircle = (x, y, r, color, line_width, fill) => {
 
     ctx.arc(x, y, r, 0, 2 * Math.PI);
 
-    if(fill != null) {
+    if(fill) {
         ctx.fill();
     } else {
         ctx.stroke();
@@ -201,7 +203,7 @@ const drawTriangle = (x, y, x2, y2, color, line_width, fill) => {
     ctx.lineTo(R, y2);
     ctx.lineTo((L + R) / 2, y);
 
-    if(fill != null) {
+    if(fill) {
         ctx.fill();
     } else {
         ctx.stroke();
@@ -209,7 +211,7 @@ const drawTriangle = (x, y, x2, y2, color, line_width, fill) => {
 };
 
 const drawRectangle = (x, y, width, height, color, line_width, fill) => {
-    if(fill != null) {
+    if(fill) {
         drawFillRect(x, y, width, height, color);
         return;
     }
@@ -301,7 +303,7 @@ const redoCanvas = () => {
 
             ctx.arc(args.x, args.y, args.r, 0, 2 * Math.PI);
 
-            if(args.fill != null) {
+            if(args.fill) {
                 ctx.fill();
             } else {
                 ctx.stroke();
@@ -322,7 +324,7 @@ const redoCanvas = () => {
             ctx.lineTo(R, D);
             ctx.lineTo((L + R) / 2, U);
 
-            if(args.fill != null) {
+            if(args.fill) {
                 ctx.fill();
             } else {
                 ctx.stroke();
@@ -375,12 +377,25 @@ const updateCursor = () => {
 
 const init_tools = () => {
     pencil.onclick    = () => { tool_state = "pencil"; updateCursor() };
-    eraser.onclick    = () => { tool_state = "eraser"; updateCursor() }
-    text.onclick      = () => { tool_state = "text"; updateCursor() }
-    line.onclick      = () => { tool_state = "line"; updateCursor() }
-    circle.onclick    = () => { tool_state = "circle"; updateCursor() }
-    triangle.onclick  = () => { tool_state = "triangle"; updateCursor() }
-    rectangle.onclick = () => { tool_state = "rectangle"; updateCursor() }
+    eraser.onclick    = () => { tool_state = "eraser"; updateCursor() };
+    text.onclick      = () => { tool_state = "text"; updateCursor() };
+    line.onclick      = () => { tool_state = "line"; updateCursor() };
+    circle.onclick    = () => { tool_state = "circle"; updateCursor() };
+    triangle.onclick  = () => { tool_state = "triangle"; updateCursor() };
+    rectangle.onclick = () => { tool_state = "rectangle"; updateCursor() };
+
+    yin_yang.onclick  = () => {
+        if(fill == false) {
+            circle.src    = "img/circle-filled.png";
+            triangle.src  = "img/triangle-filled.png";
+            rectangle.src = "img/rectangle-filled.png";
+        } else {
+            circle.src    = "img/circle.png";
+            triangle.src  = "img/triangle.png";
+            rectangle.src = "img/rectangle.png";
+        }
+        fill = !fill;
+    };
 
     upload.addEventListener("change", (e) => {
         const uploadedImage = upload.files[0];
@@ -463,7 +478,7 @@ const init_canvas = () => {
 
         document.body.appendChild(currentTextBox);
         currentTextBox.focus();
-    }
+    };
 
     let snapshot = null;
     let snapshot_ctx = null;
@@ -509,14 +524,14 @@ const init_canvas = () => {
                 let dy = cornerY - mouseY;
                 let radius = Math.sqrt(dx * dx + dy * dy);
 
-                drawCircle(cornerX, cornerY, radius, selected_color, line_thickness.value, null);
+                drawCircle(cornerX, cornerY, radius, selected_color, line_thickness.value, fill);
             } else if(tool_state == "triangle") {
-                drawTriangle(cornerX, cornerY, mouseX, mouseY, selected_color, line_thickness.value, null);
+                drawTriangle(cornerX, cornerY, mouseX, mouseY, selected_color, line_thickness.value, fill);
             } else if(tool_state == "rectangle") {
                 let width  = mouseX - cornerX;
                 let height = mouseY - cornerY;
 
-                drawRectangle(cornerX, cornerY, width, height, selected_color, line_thickness.value, null);
+                drawRectangle(cornerX, cornerY, width, height, selected_color, line_thickness.value, fill);
             }
 
             dragging = false;
@@ -607,6 +622,7 @@ const init_canvas = () => {
 
                 ctx.beginPath();
                 ctx.strokeStyle = selected_color;
+                ctx.fillStyle = selected_color;
                 ctx.lineWidth = line_thickness.value;
 
                 if(tool_state == "line") {
@@ -619,15 +635,29 @@ const init_canvas = () => {
                     let radius = Math.sqrt(dx * dx + dy * dy);
 
                     ctx.arc(cornerX, cornerY, radius, 0, 2 * Math.PI);
-                    ctx.stroke();
+
+                    if(fill) {
+                        ctx.fill();
+                    } else {
+                        ctx.stroke();
+                    }
                 } else if(tool_state == "triangle") {
                     ctx.moveTo((L + R) / 2, cornerY);
                     ctx.lineTo(L, mouseY);
                     ctx.lineTo(R, mouseY);
                     ctx.lineTo((L + R) / 2, cornerY);
-                    ctx.stroke();
+
+                    if(fill) {
+                        ctx.fill();
+                    } else {
+                        ctx.stroke();
+                    }
                 } else if(tool_state == "rectangle") {
-                    ctx.strokeRect(L, cornerY, R - L, mouseY - cornerY);
+                    if(fill) {
+                        ctx.fillRect(L, cornerY, R - L, mouseY - cornerY);
+                    } else {
+                        ctx.strokeRect(L, cornerY, R - L, mouseY - cornerY);
+                    }
                 }
             }
         }
