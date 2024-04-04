@@ -241,6 +241,7 @@ const drawImage = (image) => {
     history.push(args);
     history_pointer++;
 
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
 };
 
@@ -331,6 +332,7 @@ const redoCanvas = () => {
             ctx.strokeStyle = args.color;
             ctx.strokeRect(args.x, args.y, args.width, args.height);
         } else if(args.func == "drawImage") {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.drawImage(args.image, 0, 0, canvas.width, canvas.height);
         }
 
@@ -367,18 +369,21 @@ const undoCanvas = () => {
 
 // Initialize
 
+const updateCursor = () => {
+    canvas.className = "cursor-" + tool_state;
+};
+
 const init_tools = () => {
-    pencil.onclick    = () => { tool_state = "pencil"; };
-    eraser.onclick    = () => { tool_state = "eraser"; }
-    text.onclick      = () => { tool_state = "text"; }
-    line.onclick      = () => { tool_state = "line"; }
-    circle.onclick    = () => { tool_state = "circle"; }
-    triangle.onclick  = () => { tool_state = "triangle"; }
-    rectangle.onclick = () => { tool_state = "rectangle"; }
+    pencil.onclick    = () => { tool_state = "pencil"; updateCursor() };
+    eraser.onclick    = () => { tool_state = "eraser"; updateCursor() }
+    text.onclick      = () => { tool_state = "text"; updateCursor() }
+    line.onclick      = () => { tool_state = "line"; updateCursor() }
+    circle.onclick    = () => { tool_state = "circle"; updateCursor() }
+    triangle.onclick  = () => { tool_state = "triangle"; updateCursor() }
+    rectangle.onclick = () => { tool_state = "rectangle"; updateCursor() }
 
     upload.addEventListener("change", (e) => {
         const uploadedImage = upload.files[0];
-        console.log(uploadedImage.name);
 
         const img = new Image();
         img.src = URL.createObjectURL(uploadedImage);
@@ -406,6 +411,8 @@ const init_tools = () => {
         stampHistory();
         drawClearRect(0, 0, canvas.width, canvas.height);
     };
+
+    updateCursor();
 };
 
 const init_canvas = () => {
@@ -620,7 +627,7 @@ const init_canvas = () => {
                     ctx.lineTo((L + R) / 2, cornerY);
                     ctx.stroke();
                 } else if(tool_state == "rectangle") {
-                    ctx.strokeRect(L, U, R - L, D - U);
+                    ctx.strokeRect(L, cornerY, R - L, mouseY - cornerY);
                 }
             }
         }

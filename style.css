@@ -13,6 +13,54 @@
     background-color: white;
 }
 
+.cursor-pencil {
+    cursor: url("img/pencil.png"), auto;
+}
+
+.cursor-eraser {
+    cursor: url("img/eraser.png"), auto;
+}
+
+.cursor-text {
+    cursor: url("img/text.png"), auto;
+}
+
+.cursor-line {
+    cursor: url("img/line.png"), auto;
+}
+
+.cursor-circle {
+    cursor: url("img/circle.png"), auto;
+}
+
+.cursor-triangle {
+    cursor: url("img/triangle.png"), auto;
+}
+
+.cursor-rectangle {
+    cursor: url("img/rectangle.png"), auto;
+}
+
+.cursor-upload {
+    cursor: url("img/upload.png"), auto;
+}
+
+.cursor-download {
+    cursor: url("img/download.png"), auto;
+}
+
+.cursor-undo {
+    cursor: url("img/arrow-left.png"), auto;
+}
+
+.cursor-redo {
+    cursor: url("img/arrow-right.png"), auto;
+}
+
+.cursor-clear {
+    cursor: url("img/arrow-clear.png"), auto;
+}
+
 #color-picker {
     position: absolute;
     font-size: 0px;
