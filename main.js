@@ -195,13 +195,11 @@ const drawTriangle = (x, y, x2, y2, color, line_width, fill) => {
 
     let L = Math.min(x, x2);
     let R = Math.max(x, x2);
-    let U = Math.min(y, y2);
-    let D = Math.max(y, y2);
 
-    ctx.moveTo((L + R) / 2, U);
-    ctx.lineTo(L, D);
-    ctx.lineTo(R, D);
-    ctx.lineTo((L + R) / 2, U);
+    ctx.moveTo((L + R) / 2, y);
+    ctx.lineTo(L, y2);
+    ctx.lineTo(R, y2);
+    ctx.lineTo((L + R) / 2, y);
 
     if(fill != null) {
         ctx.fill();
@@ -596,8 +594,6 @@ const init_canvas = () => {
             if(dragging) {
                 let L = Math.min(mouseX, cornerX);
                 let R = Math.max(mouseX, cornerX);
-                let U = Math.min(mouseY, cornerY);
-                let D = Math.max(mouseY, cornerY);
 
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 ctx.drawImage(snapshot, 0, 0);
@@ -618,10 +614,10 @@ const init_canvas = () => {
                     ctx.arc(cornerX, cornerY, radius, 0, 2 * Math.PI);
                     ctx.stroke();
                 } else if(tool_state == "triangle") {
-                    ctx.moveTo((L + R) / 2, U);
-                    ctx.lineTo(L, D);
-                    ctx.lineTo(R, D);
-                    ctx.lineTo((L + R) / 2, U);
+                    ctx.moveTo((L + R) / 2, cornerY);
+                    ctx.lineTo(L, mouseY);
+                    ctx.lineTo(R, mouseY);
+                    ctx.lineTo((L + R) / 2, cornerY);
                     ctx.stroke();
                 } else if(tool_state == "rectangle") {
                     ctx.strokeRect(L, U, R - L, D - U);
