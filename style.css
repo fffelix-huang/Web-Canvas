@@ -109,8 +109,8 @@ input[type="file"] {
     left: 75%;
     top: 37.5%;
 
-    --gap: 30px;
-    --num-rows: 3;
+    --gap: 20px;
+    --num-rows: 4;
     --num-cols: 4;
     --row-height: 70px;
 
