@@ -47,6 +47,10 @@
     left: 82.5%;
 }
 
+input[type="file"] {
+    display: none;
+}
+
 .tool-box {
     position: absolute;
     font-size: 0px;

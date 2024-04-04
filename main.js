@@ -7,9 +7,6 @@ const ctx = canvas.getContext("2d");
 const SCREEN_HEIGHT = window.innerHeight;
 const SCREEN_WIDTH = window.innerWidth;
 
-const CANVAS_HEIGHT = SCREEN_HEIGHT * 0.8;
-const CANVAS_WIDTH  = SCREEN_WIDTH  * 0.7;
-
 // Mouse
 
 let mousePressed = false;
@@ -237,6 +234,18 @@ const drawRectangle = (x, y, width, height, color, line_width, fill) => {
     ctx.strokeRect(x, y, width, height);
 };
 
+const drawImage = (image) => {
+    const args = {
+        func: "drawImage",
+        image: image
+    };
+
+    history.push(args);
+    history_pointer++;
+
+    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+};
+
 const stampHistory = () => {
     cleanHistory();
 
@@ -323,6 +332,8 @@ const redoCanvas = () => {
             ctx.fillStyle = args.color;
             ctx.strokeStyle = args.color;
             ctx.strokeRect(args.x, args.y, args.width, args.height);
+        } else if(args.func == "drawImage") {
+            ctx.drawImage(args.image, 0, 0, canvas.width, canvas.height);
         }
 
         history_pointer++;
@@ -335,7 +346,7 @@ const undoCanvas = () => {
     }
 
     history_pointer--;
-    ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     let prevStamp = history_pointer;
 
@@ -367,6 +378,19 @@ const init_tools = () => {
     triangle.onclick  = () => { tool_state = "triangle"; }
     rectangle.onclick = () => { tool_state = "rectangle"; }
 
+    upload.addEventListener("change", (e) => {
+        const uploadedImage = upload.files[0];
+        console.log(uploadedImage.name);
+
+        const img = new Image();
+        img.src = URL.createObjectURL(uploadedImage);
+
+        img.onload = () => {
+            stampHistory();
+            drawImage(img);
+        };
+    });
+
     download.onclick = () => {
         let a = document.createElement("a");
         a.href = canvas.toDataURL();
@@ -382,13 +406,13 @@ const init_tools = () => {
 
     clear.onclick = () => {
         stampHistory();
-        drawClearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+        drawClearRect(0, 0, canvas.width, canvas.height);
     };
 };
 
 const init_canvas = () => {
-    canvas.height = CANVAS_HEIGHT;
-    canvas.width  = CANVAS_WIDTH;
+    canvas.height = SCREEN_HEIGHT * 0.8;
+    canvas.width  = SCREEN_WIDTH  * 0.7;
 
     let lastX = -1;
     let lastY = -1;
@@ -453,11 +477,11 @@ const init_canvas = () => {
             stampHistory();
         } else if(tool_state == "line" || tool_state == "circle" || tool_state == "triangle" || tool_state == "rectangle") {
             snapshot = document.createElement("canvas");
-            snapshot.height = CANVAS_HEIGHT;
-            snapshot.width = CANVAS_WIDTH;
+            snapshot.height = canvas.height;
+            snapshot.width = canvas.width;
 
             snapshot_ctx = snapshot.getContext("2d");
-            snapshot_ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            snapshot_ctx.clearRect(0, 0, canvas.width, canvas.height);
             snapshot_ctx.drawImage(canvas, 0, 0);
 
             cornerX = mouseX;
@@ -575,7 +599,7 @@ const init_canvas = () => {
                 let U = Math.min(mouseY, cornerY);
                 let D = Math.max(mouseY, cornerY);
 
-                ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
                 ctx.drawImage(snapshot, 0, 0);
 
                 ctx.beginPath();
