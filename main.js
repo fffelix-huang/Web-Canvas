@@ -16,10 +16,21 @@ document.body.onmouseup   = () => { mousePressed = false; };
 
 // Color
 
+const PIXEL_PER_ROW = 25;
+const PIXEL_PER_COL = 12;
+
+let COLOR_GRID = [];
+
 const make_color = (r, g, b) => { return "rgb(" + r + "," + g + "," + b + ")"; };
 
 let selected_color = make_color(0, 0, 0);
 let hovered_color = make_color(0, 0, 0);
+
+const update_current_color = () => {
+    color_box.style.background = selected_color;
+    ctx.fillStyle = selected_color;
+    ctx.strokeStyle = selected_color;
+};
 
 // Canvas Tools
 
@@ -36,6 +47,9 @@ const download = document.getElementById("download");
 const undo = document.getElementById("undo");
 const redo = document.getElementById("redo");
 const clear = document.getElementById("clear");
+const magic_wand = document.getElementById("magic-wand");
+const nyan_cat = document.getElementById("nyan-cat");
+const clown = document.getElementById("clown");
 
 const line_thickness = document.getElementById("line-thickness");
 const font_family = document.getElementById("font_family");
@@ -235,17 +249,20 @@ const drawRectangle = (x, y, width, height, color, line_width, fill) => {
     ctx.strokeRect(x, y, width, height);
 };
 
-const drawImage = (image) => {
+const drawImage = (image, x, y, width, height) => {
     const args = {
         func: "drawImage",
-        image: image
+        image: image,
+        x: x,
+        y: y,
+        width: width,
+        height: height
     };
 
     history.push(args);
     history_pointer++;
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+    ctx.drawImage(image, x, y, width, height);
 };
 
 const stampHistory = () => {
@@ -335,8 +352,7 @@ const redoCanvas = () => {
             ctx.strokeStyle = args.color;
             ctx.strokeRect(args.x, args.y, args.width, args.height);
         } else if(args.func == "drawImage") {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(args.image, 0, 0, canvas.width, canvas.height);
+            ctx.drawImage(args.image, args.x, args.y, args.width, args.height);
         }
 
         history_pointer++;
@@ -377,13 +393,14 @@ const updateCursor = () => {
 };
 
 const init_tools = () => {
-    pencil.onclick    = () => { tool_state = "pencil"; updateCursor() };
-    eraser.onclick    = () => { tool_state = "eraser"; updateCursor() };
-    text.onclick      = () => { tool_state = "text"; updateCursor() };
-    line.onclick      = () => { tool_state = "line"; updateCursor() };
-    circle.onclick    = () => { tool_state = "circle"; updateCursor() };
-    triangle.onclick  = () => { tool_state = "triangle"; updateCursor() };
-    rectangle.onclick = () => { tool_state = "rectangle"; updateCursor() };
+    pencil.onclick    = () => { tool_state = "pencil"; updateCursor(); };
+    eraser.onclick    = () => { tool_state = "eraser"; updateCursor(); };
+    text.onclick      = () => { tool_state = "text"; updateCursor(); };
+    line.onclick      = () => { tool_state = "line"; updateCursor(); };
+    circle.onclick    = () => { tool_state = "circle"; updateCursor(); };
+    triangle.onclick  = () => { tool_state = "triangle"; updateCursor(); };
+    rectangle.onclick = () => { tool_state = "rectangle"; updateCursor(); };
+    clown.onclick     = () => { tool_state = "clown"; updateCursor(); };
 
     yin_yang.onclick  = () => {
         if(fill == false) {
@@ -406,7 +423,8 @@ const init_tools = () => {
 
         img.onload = () => {
             stampHistory();
-            drawImage(img);
+            drawClearRect(0, 0, canvas.width, canvas.height);
+            drawImage(img, 0, 0, canvas.width, canvas.height);
         };
     });
 
@@ -426,6 +444,49 @@ const init_tools = () => {
     clear.onclick = () => {
         stampHistory();
         drawClearRect(0, 0, canvas.width, canvas.height);
+    };
+
+    magic_wand.onclick = () => {
+        // Random Color!
+        let red   = Math.random() * 255;
+        let green = Math.random() * 255;
+        let blue  = Math.random() * 255;
+        selected_color = make_color(red, green, blue);
+        update_current_color();
+    };
+
+    let nyan_cat_toggle = false;
+    let nyan_cat_working = 0;
+    nyan_cat.onclick = () => {
+        nyan_cat_toggle = !nyan_cat_toggle;
+
+        if(nyan_cat_toggle) {
+            nyan_cat.src = "img/nyan-cat.gif";
+
+            const dx = [0, 1, 0, -1];
+            const dy = [1, 0, -1, 0];
+            let row = 0, col = 0, dir = 0;
+
+            nyan_cat_working = setInterval(() => {
+                let new_row = row + dx[dir];
+                let new_col = col + dy[dir];
+                
+                if(new_row >= 0 && new_row < PIXEL_PER_COL && new_col >= 0 && new_col < PIXEL_PER_ROW) {
+                    row = new_row;
+                    col = new_col;
+                } else {
+                    dir = (dir + 1) % 4;
+                    row += dx[dir];
+                    col += dy[dir];
+                }
+
+                selected_color = COLOR_GRID[row][col];
+                update_current_color();
+            }, 1000 / 200);
+        } else {
+            nyan_cat.src = "img/nyan-cat.png";
+            clearInterval(nyan_cat_working);
+        }
     };
 
     updateCursor();
@@ -457,28 +518,35 @@ const init_canvas = () => {
             writeText();
         }
 
-        if(tool_state != "text") {
-            return;
-        }
+        if(tool_state == "text") {
+            currentTextBox = document.createElement("input");
+            currentTextBox.type = "text";
+            currentTextBox.style.position = "fixed";
+            currentTextBox.style.left = (e.clientX - 4) + "px";
+            currentTextBox.style.top = (e.clientY - 4) + "px";
 
-        currentTextBox = document.createElement("input");
-        currentTextBox.type = "text";
-        currentTextBox.style.position = "fixed";
-        currentTextBox.style.left = (e.clientX - 4) + "px";
-        currentTextBox.style.top = (e.clientY - 4) + "px";
+            currentTextBox.onkeydown = function(key) {
+                if(key.keyCode == 13) {
+                    writeText();
+                }
+            };
 
-        currentTextBox.onkeydown = function(key) {
-            if(key.keyCode == 13) {
+            currentTextBox.onmousedown = function() {
                 writeText();
             }
-        };
 
-        currentTextBox.onmousedown = function() {
-            writeText();
+            document.body.appendChild(currentTextBox);
+            currentTextBox.focus();
+        } else if(tool_state == "clown") {
+            let mouseX = e.pageX - this.offsetLeft;
+            let mouseY = e.pageY - this.offsetTop;
+
+            const clown_img = new Image();
+            clown_img.src = "img/clown.png";
+
+            stampHistory();
+            drawImage(clown_img, mouseX, mouseY, clown_img.width, clown_img.height);
         }
-
-        document.body.appendChild(currentTextBox);
-        currentTextBox.focus();
     };
 
     let snapshot = null;
@@ -666,15 +734,18 @@ const init_canvas = () => {
 };
 
 const init_color_picker = () => {
-    const WIDTH = 25;
-    const HEIGHT = 12;
+    const WIDTH = PIXEL_PER_ROW;
+    const HEIGHT = PIXEL_PER_COL;
     const PIXEL_SIZE = SCREEN_WIDTH / 110;
 
     color_picker.innerHTML = "";
+    COLOR_GRID = [];
 
     for(let i = 0; i < HEIGHT; i++) {
         const row = document.createElement("div");
         row.classList.add("row");
+
+        let row_colors = [];
 
         for(let j = 0; j < WIDTH; j++) {
             const pixel = document.createElement("button");
@@ -685,11 +756,11 @@ const init_color_picker = () => {
 
             let color = make_color(i * (255 / HEIGHT), j * (255 / WIDTH), 255 / 2);
             pixel.style.background = color;
+            row_colors.push(color);
 
             pixel.onclick = () => {
                 selected_color = color;
-                color_box.style.background = selected_color;
-                ctx.fillStyle = selected_color;
+                update_current_color();
             };
 
             pixel.onmouseenter = () => { color_box.style.background = color; };
@@ -699,6 +770,7 @@ const init_color_picker = () => {
         }
 
         color_picker.appendChild(row);
+        COLOR_GRID.push(row_colors);
     }
 };
 
