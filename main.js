@@ -38,11 +38,12 @@ const redo = document.getElementById("redo");
 const clear = document.getElementById("clear");
 
 const line_thickness = document.getElementById("line-thickness");
+const font_family = document.getElementById("font_family");
+const font_size = document.getElementById("font_size");
 
 let tool_state = "pencil";
 let fill = false;
 let operations = [];
-let font_style = "sans-serif";
 
 // Histories
 
@@ -92,7 +93,7 @@ const drawClearRect = (x, y, width, height) => {
     ctx.clearRect(x, y, width, height);
 };
 
-const drawFillText = (text_info, x, y, color, font_size, font_style) => {
+const drawFillText = (text_info, x, y, color, font_size, font_family) => {
     cleanHistory();
 
     const args = {
@@ -102,7 +103,7 @@ const drawFillText = (text_info, x, y, color, font_size, font_style) => {
         y: y,
         color: color,
         font_size: font_size,
-        font_style: font_style
+        font_family: font_family
     }
 
     history.push(args);
@@ -112,7 +113,7 @@ const drawFillText = (text_info, x, y, color, font_size, font_style) => {
     ctx.textAlign = "left";
     ctx.fillStyle = color;
     ctx.strokeStyle = color;
-    ctx.font = font_size + "px " + font_style;
+    ctx.font = font_size + "px " + font_family;
 
     ctx.fillText(text_info, x, y);
 };
@@ -283,7 +284,7 @@ const redoCanvas = () => {
             ctx.textAlign = "left";
             ctx.fillStyle = args.color;
             ctx.strokeStyle = args.color;
-            ctx.font = args.font_size + "px " + args.font_style;
+            ctx.font = args.font_size + "px " + args.font_family;
 
             ctx.fillText(args.text_info, args.x, args.y);
         } else if(args.func == "drawLine") {
@@ -445,7 +446,7 @@ const init_canvas = () => {
         let y = parseInt(currentTextBox.style.top, 10);
 
         stampHistory();
-        drawFillText(textInfo, x - SCREEN_WIDTH * 0.03, y - SCREEN_HEIGHT * 0.03, selected_color, line_thickness.value * 2, font_style);
+        drawFillText(textInfo, x - SCREEN_WIDTH * 0.03, y - SCREEN_HEIGHT * 0.03, selected_color, font_size.value, font_family.value);
 
         document.body.removeChild(currentTextBox);
         currentTextBox = null;

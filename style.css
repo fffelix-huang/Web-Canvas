@@ -103,7 +103,7 @@ input[type="file"] {
     position: absolute;
     font-size: 0px;
     left: 75%;
-    top: 30%;
+    top: 37.5%;
 
     --gap: 30px;
     --num-rows: 3;
@@ -190,4 +190,16 @@ input[type="range"]:focus::-moz-range-thumb {
     border: 1px solid #153b3f;
     outline: 3px solid #153b3f;
     outline-offset: 0.125rem;
+}
+
+#font_family {
+    position: absolute;
+    left: 80%;
+    top: 35%;
+}
+
+#font_size {
+    position: absolute;
+    left: 90%;
+    top: 35%;
 }
