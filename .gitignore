@@ -1,1 +1,7 @@
 .vscode
+database.rules.json
+.firebase/
+firebase.json
+.firebaserc
+.github/
+public/

@@ -191,7 +191,7 @@ Switch to stamp mode. After clicking on the canvas, it will stamp a clown sticke
 
 ### Web page link
 
-    your web page URL.
+[https://web-canvas-b25f9.web.app/](https://web-canvas-b25f9.web.app/)
 
 ### Others (Optional)
 
