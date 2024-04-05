@@ -334,13 +334,11 @@ const redoCanvas = () => {
 
             let L = Math.min(args.x, args.x2);
             let R = Math.max(args.x, args.x2);
-            let U = Math.min(args.y, args.y2);
-            let D = Math.max(args.y, args.y2);
 
-            ctx.moveTo((L + R) / 2, U);
-            ctx.lineTo(L, D);
-            ctx.lineTo(R, D);
-            ctx.lineTo((L + R) / 2, U);
+            ctx.moveTo((L + R) / 2, args.y);
+            ctx.lineTo(L, args.y2);
+            ctx.lineTo(R, args.y2);
+            ctx.lineTo((L + R) / 2, args.y);
 
             if(args.fill) {
                 ctx.fill();
