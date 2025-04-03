@@ -1,4 +1,4 @@
-# Software Studio 2023 Spring
+# Software Studio 2024 Spring
 ## Assignment 01 Web Canvas
 
 
@@ -192,13 +192,3 @@ Switch to stamp mode. After clicking on the canvas, it will stamp a clown sticke
 ### Web page link
 
 [https://web-canvas-b25f9.web.app/](https://web-canvas-b25f9.web.app/)
-
-### Others (Optional)
-
-    Anything you want to say to TAs.
-
-<style>
-table th{
-    width: 100%;
-}
-</style>
